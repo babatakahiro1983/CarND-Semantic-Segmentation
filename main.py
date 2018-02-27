@@ -62,7 +62,7 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
                                         kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
    
     
-    return None
+    return output
 tests.test_layers(layers)
 
 
@@ -76,9 +76,13 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     :return: Tuple of (logits, train_op, cross_entropy_loss)
     """
     # TODO: Implement function
-    logits = tf.reshape(input, (-1, num_classes))
+    logits = tf.reshape(nn_last_layer, (-1, num_classes))
+    correct_label = tf.reshape(correct_label, (-1,num_classes))
+    cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits= logits, labels= correct_label))
+    optimizer = tf.train.AdamOptimizer(learning_rate= learning_rate)
+    train_op = optimizer.minimize(cross_entropy_loss)
     
-    return None, None, None
+    return logits, train_op, cross_entropy_loss
 tests.test_optimize(optimize)
 
 
@@ -98,9 +102,19 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param learning_rate: TF Placeholder for learning rate
     """
     # TODO: Implement function
+    sess.run(tf.global_variables_initializer())
+
+    print('Training start')
+
     for epochs in epochs:
+        print('Epoch :{} '.format(epoch+1))
         for image, label in get_batches_fn(batch_size):
-            pass
+            _, loss = sess.run([train_op, cross_entropy_loss],
+                                feed_dict={input_image: image, correct_label: label, keep_prob: 0.5, learning_rate: 0.00001})
+
+            print('Loss: = {:.3f}'.format(loss))
+    print('Training finished')
+
         
 tests.test_train_nn(train_nn)
 

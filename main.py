@@ -55,12 +55,39 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :return: The Tensor for the last layer of output
     """
     # TODO: Implement function
-    conv_1x1 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, padding='same',
-                                kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+    # 1x1 Convolution
+    layer7_conv_1x1 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, 1, padding='same',
+                                       kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     
-    output = tf.layers.conv2d_transpose(conv_1x1, num_classes, 4, 2, padding='same',
+    # Transposed Convolutions
+    output = tf.layers.conv2d_transpose(layer7_conv_1x1, num_classes, 4, 2, padding='same',
                                         kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
-   
+
+
+    # 1x1 Convolution
+    layer4_conv_1x1 = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, 1, padding='same',
+                                       kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+
+    # Skip
+    output = tf.add(output, layer4_conv_1x1)
+    
+
+    # Transposed Convolutions
+    output = tf.layers.conv2d_transpose(output, num_classes, 4, 2, padding='same',
+                                        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+
+    # 1x1 Convolution
+    layer3_conv_1x1 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, 1, padding='same',
+                                       kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+
+
+    # Skip
+    output = tf.add(output, layer3_conv_1x1)
+
+
+    # Transposed Convolutions
+    output = tf.layers.conv2d_transpose(output, num_classes, 16, 8, padding='same',
+                                        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     
     return output
 tests.test_layers(layers)
@@ -106,7 +133,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
 
     print('Training start')
 
-    for epochs in epochs:
+    for epoch in epochs:
         print('Epoch :{} '.format(epoch+1))
         for image, label in get_batches_fn(batch_size):
             _, loss = sess.run([train_op, cross_entropy_loss],
@@ -148,6 +175,7 @@ def run():
         learning_rate = tf.placeholder(tf.float32, name='learning_rate')
 
         input_image, keep_prob, layer3_out, layer4_out, layer7_out = load_vgg(sess, vgg_path)
+        
         layer_output = layers(layer3_out, layer4_out, layer7_out, num_classes)
 
         logits, train_op, cross_entropy_loss = optimize(layer_output, correct_label, learning_rate, num_classes)

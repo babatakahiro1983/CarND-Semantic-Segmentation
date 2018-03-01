@@ -57,15 +57,18 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     # TODO: Implement function
     # 1x1 Convolution
     layer7_conv_1x1 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, 1, padding='same',
+                                       kernel_initializer=tf.random_normal_initializer(stddev=0.01),
                                        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     
     # Transposed Convolutions
     output = tf.layers.conv2d_transpose(layer7_conv_1x1, num_classes, 4, 2, padding='same',
+                                        kernel_initializer=tf.random_normal_initializer(stddev=0.01),
                                         kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
 
 
     # 1x1 Convolution
     layer4_conv_1x1 = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, 1, padding='same',
+                                       kernel_initializer=tf.random_normal_initializer(stddev=0.01),
                                        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
 
     # Skip
@@ -74,10 +77,12 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
 
     # Transposed Convolutions
     output = tf.layers.conv2d_transpose(output, num_classes, 4, 2, padding='same',
+                                        kernel_initializer=tf.random_normal_initializer(stddev=0.01),
                                         kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
 
     # 1x1 Convolution
     layer3_conv_1x1 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, 1, padding='same',
+                                       kernel_initializer=tf.random_normal_initializer(stddev=0.01),
                                        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
 
 
@@ -87,6 +92,7 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
 
     # Transposed Convolutions
     output = tf.layers.conv2d_transpose(output, num_classes, 16, 8, padding='same',
+                                        kernel_initializer=tf.random_normal_initializer(stddev=0.01),
                                         kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     
     return output
